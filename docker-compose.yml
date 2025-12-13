@@ -6,6 +6,7 @@ services:
     volumes:
       - ./laravel:/var/www
       - ./php.ini:/usr/local/etc/php/php.ini
+
     networks:
       - laravel
   webserver:
