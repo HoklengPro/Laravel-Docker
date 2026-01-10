@@ -2,20 +2,17 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Models\Role;
-use App\Models\Task;
-use App\Models\Product;
+use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -51,17 +48,29 @@ class User extends Authenticatable
         ];
     }
 
-    // RBAC Methods
+    // ========================================
+    // TP6: RBAC Relationships & Methods
+    // ========================================
+
+    /**
+     * The roles that belong to the user.
+     */
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class);
     }
 
+    /**
+     * Check if user has a specific role.
+     */
     public function hasRole(string $role): bool
     {
         return $this->roles()->where('name', $role)->exists();
     }
 
+    /**
+     * Check if user has a specific permission.
+     */
     public function hasPermission(string $permission): bool
     {
         return $this->roles()
@@ -69,13 +78,43 @@ class User extends Authenticatable
             ->exists();
     }
 
-    public function products(): HasMany
-    {
-        return $this->hasMany(Project::class, 'created_by');
-    }
-
+    /**
+     * Get the tasks assigned to the user (if Task model exists).
+     * Note: This is for TP6 if you have Task model
+     */
     public function assignedTasks(): HasMany
     {
         return $this->hasMany(Task::class, 'assigned_to');
+    }
+
+    // ========================================
+    // TP7: Advanced Eloquent Relationships
+    // ========================================
+
+    /**
+     * TP7 Relationship 1: User can be an Author
+     * One-to-One relationship
+     */
+    public function author(): HasOne
+    {
+        return $this->hasOne(Author::class);
+    }
+
+    /**
+     * TP7 Relationship 2: User can be an Audience
+     * One-to-One relationship
+     */
+    public function audience(): HasOne
+    {
+        return $this->hasOne(Audience::class);
+    }
+
+    /**
+     * TP7 Relationship 8: A user wrote many comments
+     * One-to-Many relationship
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
     }
 }

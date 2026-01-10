@@ -9,11 +9,7 @@ use App\Models\Category;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 
-// ------------------------
-// Public routes
-// ------------------------
 
-// Login endpoint (returns Sanctum token)
 Route::post('/login', function (Request $request) {
     $request->validate(['email' => 'required|email', 'password' => 'required']);
 
@@ -27,18 +23,13 @@ Route::post('/login', function (Request $request) {
     return response()->json(['token' => $token]);
 });
 
-// ------------------------
-// Protected routes
-// ------------------------
+
 Route::middleware(['auth:sanctum'])->group(function () {
 
     // Current authenticated user info
     Route::get('/user', fn(Request $request) => $request->user());
     Route::get('/me', fn(Request $request) => $request->user()->load('roles'));
 
-    // ------------------------
-    // Categories (Controller-based)
-    // ------------------------
     Route::controller(CategoryController::class)->prefix('categories')->group(function() {
         Route::get('/', 'getCategories');                  // GET /api/categories
         Route::post('/', 'createCategory');                // POST /api/categories
@@ -47,7 +38,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/{categoryId}', 'deleteCategory'); // DELETE /api/categories/{categoryId}
     });
 
-    // Categories status update (closure with policy)
     Route::patch('/categories/{category}/status', function (Request $request, Category $category) {
         abort_unless($request->user()->can('updateStatus', $category), 403);
 
@@ -57,9 +47,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return response()->json(['category' => $category]);
     });
 
-    // ------------------------
-    // Products (Controller-based)
-    // ------------------------
+
     Route::controller(ProductController::class)->prefix('products')->group(function() {
         Route::get('/', 'index');          // GET /api/products
         Route::post('/', 'store');         // POST /api/products
@@ -68,7 +56,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/{id}', 'destroy'); // DELETE /api/products/{id}
     });
 
-    // Optional closure for product creation (manager/admin only)
     Route::post('/products', function (Request $request) {
         abort_unless($request->user()->can('products.create'), 403);
 
@@ -82,9 +69,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return response()->json(['product' => $product], 201);
     });
 
-    // ------------------------
-    // Tasks
-    // ------------------------
+
     Route::get('/tasks', function (Request $request) {
         $user = $request->user();
 
@@ -102,7 +87,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return response()->json(['tasks' => $tasks]);
     });
 
-    // Update task status (staff can update assigned tasks)
+
     Route::patch('/tasks/{task}/status', function (Request $request, Task $task) {
         abort_unless($request->user()->can('updateStatus', $task), 403);
 
