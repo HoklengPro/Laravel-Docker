@@ -7,14 +7,20 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        // Check if user can view products
+        abort_unless($request->user()->can('products.view'), 403, 'Unauthorized to view products');
+        
         $products = Product::with('category')->get();
-        return response()->json($products);
+        return response()->json(['products' => $products]);
     }
 
     public function store(Request $request)
     {
+        // Check permission
+        abort_unless($request->user()->can('products.create'), 403, 'Unauthorized to create products');
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
@@ -24,17 +30,23 @@ class ProductController extends Controller
         ]);
 
         $product = Product::create($validated);
-        return response()->json($product, 201);
+        return response()->json(['product' => $product, 'message' => 'Product created successfully'], 201);
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
+        // Check permission
+        abort_unless($request->user()->can('products.view'), 403, 'Unauthorized to view products');
+        
         $product = Product::with('category')->findOrFail($id);
-        return response()->json($product);
+        return response()->json(['product' => $product]);
     }
 
     public function update(Request $request, $id)
     {
+        // Check permission
+        abort_unless($request->user()->can('products.update'), 403, 'Unauthorized to update products');
+        
         $product = Product::findOrFail($id);
         
         $validated = $request->validate([
@@ -46,11 +58,14 @@ class ProductController extends Controller
         ]);
 
         $product->update($validated);
-        return response()->json($product);
+        return response()->json(['product' => $product, 'message' => 'Product updated successfully']);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
+        // Check permission
+        abort_unless($request->user()->can('products.delete'), 403, 'Unauthorized to delete products');
+        
         $product = Product::findOrFail($id);
         $product->delete();
         return response()->json(['message' => 'Product deleted successfully']);

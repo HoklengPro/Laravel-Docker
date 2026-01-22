@@ -10,7 +10,7 @@ class TaskPolicy
     {
         if ($user->hasRole('admin')) return true;
         if ($user->hasRole('manager')) {
-            return $task->products->created_by === $user->id;
+            return $task->project->created_by === $user->id;
         }
         if ($user->hasRole('staff')) {
             return $task->assigned_to === $user->id;

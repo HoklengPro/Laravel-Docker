@@ -87,6 +87,14 @@ class User extends Authenticatable
         return $this->hasMany(Task::class, 'assigned_to');
     }
 
+    /**
+     * Get the projects created by this user (manager)
+     */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class, 'created_by');
+    }
+
     // ========================================
     // TP7: Advanced Eloquent Relationships
     // ========================================

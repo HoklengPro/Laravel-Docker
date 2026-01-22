@@ -18,13 +18,13 @@ Route::post('/login', function (Request $request) {
     }
 
     $user = Auth::user();
-    $token = $user->createToken('mobile')->plainTextToken;
+    $token = $user->createToken('mobile')->accessToken;
 
-    return response()->json(['token' => $token]);
+    return response()->json(['token' => $token, 'user' => $user]);
 });
 
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:api'])->group(function () {
 
     // Current authenticated user info
     Route::get('/user', fn(Request $request) => $request->user());
@@ -74,14 +74,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
         $user = $request->user();
 
         if ($user->hasRole('admin')) {
-            $tasks = Task::with(['products', 'assignedUser'])->get();
+            $tasks = Task::with(['project', 'assignedUser'])->get();
         } elseif ($user->hasRole('manager')) {
-            $tasks = Task::whereHas('products', fn($q) =>
+            $tasks = Task::whereHas('project', fn($q) =>
             $q->where('created_by', $user->id)
-            )->with(['products', 'assignedUser'])->get();
+            )->with(['project', 'assignedUser'])->get();
         } else {
             $tasks = Task::where('assigned_to', $user->id)
-                ->with(['products', 'assignedUser'])->get();
+                ->with(['project', 'assignedUser'])->get();
         }
 
         return response()->json(['tasks' => $tasks]);
